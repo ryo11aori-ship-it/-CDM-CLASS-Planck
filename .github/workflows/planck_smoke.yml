@@ -1,12 +1,12 @@
 name: CLASS alive check
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   alive:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-
     steps:
       - uses: actions/checkout@v4
 
@@ -14,7 +14,4 @@ jobs:
         run: docker build -t class-alive-check .
 
       - name: Run alive check
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/work \
-            class-alive-check
+        run: docker run --rm class-alive-check
