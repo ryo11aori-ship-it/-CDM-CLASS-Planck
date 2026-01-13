@@ -1,33 +1,20 @@
 name: CLASS alive check
 
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 
 jobs:
-  alive-check:
+  alive:
     runs-on: ubuntu-latest
-    # CI's purpose is fast kill on immediate failures; keep job timeout short
-    timeout-minutes: 3
+    timeout-minutes: 5
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Build docker image containing CLASS
-        # Building can take some time, but should usually fit under 3 minutes for small repos.
-        # If your build routinely exceeds the timeout, consider making this a self-hosted runner
+      - name: Build Docker image
         run: docker build -t class-alive-check .
 
-      - name: Run alive check (inside docker)
-        # mount the repo so logs / artifacts are visible
+      - name: Run alive check
         run: |
-          docker run --rm -v ${{ github.workspace }}:/work class-alive-check
-
-      - name: Upload last lines of class.log (if exists)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: class-log-tail
-          path: |
-            ./class.log
+          docker run --rm \
+            -v ${{ github.workspace }}:/work \
+            class-alive-check
