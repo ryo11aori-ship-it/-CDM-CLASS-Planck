@@ -1,0 +1,29 @@
+name: Planck ΛCDM smoke test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  planck-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t planck-ci .
+
+      - name: Inject Planck data
+        run: |
+          mkdir -p planck
+          echo "$PLANCK_DATA_B64" | base64 -d | tar xz -C planck
+
+      - name: Run smoke test
+        run: |
+          docker run --rm \
+            -v $PWD/planck:/opt/planck \
+            -v $PWD:/work \
+            planck-ci \
+            bash scripts/run_smoke.sh
