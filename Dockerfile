@@ -14,7 +14,16 @@ RUN apt-get update && apt-get install -y \
     wget \
     libopenblas-dev \
     liblapack-dev \
+    openmpi-bin \
+    libopenmpi-dev \
  && rm -rf /var/lib/apt/lists/*
+
+# ---- Python deps ----
+RUN pip3 install --no-cache-dir \
+    numpy \
+    scipy \
+    cython \
+    mpi4py
 
 # ---- CLASS ----
 WORKDIR /opt
@@ -25,13 +34,9 @@ RUN make -j2
 ENV CLASS_PATH=/opt/class
 
 # ---- MontePython ----
-RUN pip3 install --no-cache-dir \
-    numpy \
-    scipy \
-    cython \
-    mpi4py \
-    montepython
+WORKDIR /opt
+RUN git clone https://github.com/brinckmann/montepython_public.git montepython
 
-ENV PYTHONPATH=/opt/class:$PYTHONPATH
+ENV PYTHONPATH=/opt/montepython:/opt/class
 
 WORKDIR /work
