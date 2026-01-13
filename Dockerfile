@@ -1,10 +1,12 @@
+# Dockerfile: builds CLASS and provides CI-ready image that can run alive check
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 
-RUN apt-get update && apt-get install -y \
+# ----- system packages -----
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gfortran \
     python3 \
@@ -12,31 +14,26 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     git \
     wget \
+    ca-certificates \
     libopenblas-dev \
     liblapack-dev \
-    openmpi-bin \
-    libopenmpi-dev \
  && rm -rf /var/lib/apt/lists/*
 
-# ---- Python deps ----
-RUN pip3 install --no-cache-dir \
-    numpy \
-    scipy \
-    cython \
-    mpi4py
-
-# ---- CLASS ----
+# ----- clone and build CLASS -----
 WORKDIR /opt
 RUN git clone https://github.com/lesgourg/class_public.git class
+
 WORKDIR /opt/class
+# Build CLASS; -j2 to be conservative in CI
 RUN make -j2
 
 ENV CLASS_PATH=/opt/class
+ENV PATH=$CLASS_PATH:$PATH
 
-# ---- MontePython ----
-WORKDIR /opt
-RUN git clone https://github.com/brinckmann/montepython_public.git montepython
-
-ENV PYTHONPATH=/opt/montepython:/opt/class
-
+# ----- copy repo files (CI will mount workdir or use image directly) -----
 WORKDIR /work
+COPY . /work
+RUN chmod +x /work/scripts/alive_check.sh
+
+# default entrypoint (useful for local docker run)
+ENTRYPOINT ["/work/scripts/alive_check.sh"]
