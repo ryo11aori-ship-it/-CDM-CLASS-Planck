@@ -2,6 +2,9 @@
 
 echo "[CI] CLASS alive check started"
 
+# CLASS が要求する出力ディレクトリ
+mkdir -p output/class
+
 INI=class/explanatory.ini
 
 timeout 180 ./class/class $INI > /tmp/class.log 2>&1
