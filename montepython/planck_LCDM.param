@@ -1,0 +1,23 @@
+# ========= COSMOLOGY =========
+H0 = 67.5
+omega_b = 0.02237
+omega_cdm = 0.1200
+tau_reio = 0.054
+ln10^{10}A_s = 3.044
+n_s = 0.965
+
+# ========= CLASS =========
+cosmology = lcdm
+output = tCl,pCl,lCl
+l_max_scalars = 2500
+P_k_max_1/Mpc = 3.0
+
+# ========= LIKELIHOODS =========
+data.experiments = Planck_highl_TTTEEE,Planck_lowl_EE,Planck_lowl_TT
+
+# ========= PATHS =========
+path[data] = /opt/planck
+path[class] = /opt/class
+
+# ========= SAMPLING =========
+sampler = MH
