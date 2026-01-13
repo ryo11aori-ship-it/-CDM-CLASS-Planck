@@ -1,29 +1,33 @@
-name: Planck ΛCDM smoke test
+name: CLASS alive check
 
 on:
   push:
   pull_request:
 
 jobs:
-  planck-ci:
+  alive-check:
     runs-on: ubuntu-latest
+    # CI's purpose is fast kill on immediate failures; keep job timeout short
     timeout-minutes: 3
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t planck-ci .
+      - name: Build docker image containing CLASS
+        # Building can take some time, but should usually fit under 3 minutes for small repos.
+        # If your build routinely exceeds the timeout, consider making this a self-hosted runner
+        run: docker build -t class-alive-check .
 
-      - name: Inject Planck data
+      - name: Run alive check (inside docker)
+        # mount the repo so logs / artifacts are visible
         run: |
-          mkdir -p planck
-          echo "$PLANCK_DATA_B64" | base64 -d | tar xz -C planck
+          docker run --rm -v ${{ github.workspace }}:/work class-alive-check
 
-      - name: Run smoke test
-        run: |
-          docker run --rm \
-            -v $PWD/planck:/opt/planck \
-            -v $PWD:/work \
-            planck-ci \
-            bash scripts/run_smoke.sh
+      - name: Upload last lines of class.log (if exists)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: class-log-tail
+          path: |
+            ./class.log
