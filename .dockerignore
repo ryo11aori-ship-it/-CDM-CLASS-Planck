@@ -1,5 +1,5 @@
 .git
-.github
 __pycache__
 *.log
 chains
+.planck-data
